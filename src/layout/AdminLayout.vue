@@ -2,17 +2,18 @@
   <el-container class="admin-layout">
     <!-- 侧边栏 -->
     <el-aside :width="isCollapse ? '64px' : '220px'" class="admin-aside">
-      <div class="logo" @click="toggleCollapse">
-        <span v-if="!isCollapse">AMS</span>
-        <span v-else>A</span>
+      <div class="sidebar-logo" @click="toggleCollapse">
+        <span class="logo-icon">A</span>
+        <span v-show="!isCollapse" class="logo-text">AMS</span>
       </div>
       <el-menu
         :default-active="activeMenu"
         :collapse="isCollapse"
         router
-        background-color="#304156"
-        text-color="#bfcbd9"
-        active-text-color="#409eff"
+        background-color="transparent"
+        text-color="rgba(255,255,255,0.55)"
+        active-text-color="#c9a44b"
+        class="sidebar-menu"
       >
         <template v-for="route in menuRoutes" :key="route.path">
           <el-menu-item v-if="!route.children || route.children.length === 0" :index="route.path">
@@ -38,19 +39,19 @@
     </el-aside>
 
     <!-- 右侧内容 -->
-    <el-container>
+    <el-container class="main-container">
       <!-- 顶栏 -->
       <el-header class="admin-header">
         <div class="header-left">
-          <el-icon class="collapse-btn" @click="toggleCollapse">
-            <Fold v-if="!isCollapse" />
-            <Expand v-else />
-          </el-icon>
+          <span class="collapse-btn" @click="toggleCollapse">☰</span>
+          <span class="breadcrumb">AMS / <em>首页概览</em></span>
         </div>
         <div class="header-right">
+          <span class="user-avatar">A</span>
+          <span class="user-name">Admin</span>
           <el-dropdown @command="handleCommand">
             <span class="user-info">
-              Admin <el-icon><ArrowDown /></el-icon>
+              <el-icon><ArrowDown /></el-icon>
             </span>
             <template #dropdown>
               <el-dropdown-menu>
@@ -62,7 +63,7 @@
       </el-header>
 
       <!-- 主内容区 -->
-      <el-main>
+      <el-main class="content-area">
         <router-view />
       </el-main>
     </el-container>
@@ -72,7 +73,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ArrowDown, Fold, Expand } from '@element-plus/icons-vue'
+import { ArrowDown } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
 
 const route = useRoute()
@@ -82,7 +83,6 @@ const isCollapse = ref(false)
 
 const activeMenu = computed(() => route.path)
 
-// 获取 AdminLayout 的直接子路由作为菜单项
 const menuRoutes = computed(() => {
   return router.options.routes
     .find((r) => r.path === '/' && r.component)
@@ -108,46 +108,167 @@ function handleCommand(command: string) {
   height: 100vh;
 }
 
+/* ======== 侧边栏 ======== */
 .admin-aside {
-  background-color: #304156;
-  transition: width 0.3s;
+  background: linear-gradient(180deg, $deeper-blue 0%, $deep-blue 100%);
+  transition: width 0.3s ease-out;
   overflow: hidden;
+}
 
-  .logo {
-    height: 56px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #fff;
-    font-size: 20px;
-    font-weight: bold;
-    cursor: pointer;
-    user-select: none;
+.sidebar-logo {
+  height: $header-height;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  cursor: pointer;
+  user-select: none;
+}
+
+.logo-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba($gold, 0.15);
+  color: $gold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.logo-text {
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  white-space: nowrap;
+  letter-spacing: 2px;
+}
+
+/* ======== el-menu 覆盖 ======== */
+.sidebar-menu {
+  border-right: none;
+  padding: 12px 8px;
+
+  :deep(.el-menu-item),
+  :deep(.el-sub-menu__title) {
+    border-radius: $radius-sm;
+    margin-bottom: 2px;
+    height: 42px;
+    line-height: 42px;
+    font-size: 14px;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.06) !important;
+      color: #fff;
+    }
+  }
+
+  :deep(.el-menu-item.is-active) {
+    color: $gold;
+    background: rgba($gold, 0.12) !important;
+  }
+
+  :deep(.el-sub-menu .el-menu) {
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: $radius-sm;
   }
 }
 
+/* ======== 右侧主区域 ======== */
+.main-container {
+  background: $bg-light;
+}
+
+/* ======== 顶栏 ======== */
 .admin-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   background: #fff;
-  border-bottom: 1px solid #e4e7ed;
-  padding: 0 16px;
+  border-bottom: 1px solid $border-color;
+  padding: 0 20px;
+  height: $header-height;
+}
 
-  .collapse-btn {
-    font-size: 20px;
-    cursor: pointer;
-  }
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
 
-  .user-info {
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 4px;
+.collapse-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: $radius-sm;
+  color: $text-secondary;
+  font-size: 16px;
+  transition: 0.2s ease-out;
+
+  &:hover {
+    background: $bg-light;
+    color: $text-primary;
   }
 }
 
-:deep(.el-menu) {
-  border-right: none;
+.breadcrumb {
+  font-size: 14px;
+  color: $text-secondary;
+
+  em {
+    font-style: normal;
+    color: $text-primary;
+  }
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: $deep-blue;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.user-name {
+  font-size: 13px;
+  color: $text-primary;
+  font-weight: 500;
+}
+
+.user-info {
+  cursor: pointer;
+  color: $text-secondary;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  transition: 0.2s ease-out;
+
+  &:hover {
+    color: $text-primary;
+  }
+}
+
+/* ======== 内容区 ======== */
+.content-area {
+  padding: 24px;
+  overflow-y: auto;
 }
 </style>

@@ -5,12 +5,28 @@ $sidebar-collapse-width: 64px;
 // 顶栏高度
 $header-height: 56px;
 
-// 主色
-$primary-color: #409eff;
+// 品牌色
+$deep-blue: #1e3b5c;
+$deeper-blue: #152d46;
+$gold: #c9a44b;
+$gold-hover: #b8943a;
 
 // 背景色
-$bg-color: #f5f7fa;
+$bg-light: #f0f4f8;
+$bg-white: #ffffff;
 
 // 文字色
-$text-color: #303133;
-$text-color-light: #909399;
+$text-primary: #1a1a2e;
+$text-secondary: #6b7d8e;
+$text-light: #a0b0c0;
+
+// 边框
+$border-color: #e2e8f0;
+
+// 阴影
+$shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+$shadow-md: 0 8px 24px rgba(0, 0, 0, 0.10);
+
+// 圆角
+$radius-sm: 6px;
+$radius: 8px;

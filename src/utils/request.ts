@@ -24,7 +24,7 @@ request.interceptors.response.use(
     const res = response.data as Result<unknown>
 
     if (res.code === 200) {
-      return res.data
+      return res.data as unknown as typeof response
     }
 
     if (res.code === 401) {

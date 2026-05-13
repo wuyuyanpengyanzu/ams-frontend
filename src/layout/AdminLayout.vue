@@ -16,7 +16,7 @@
         class="sidebar-menu"
       >
         <template v-for="route in menuRoutes" :key="route.path">
-          <el-menu-item v-if="!route.children || route.children.length === 0" :index="route.path">
+          <el-menu-item v-if="!route.children || route.children.length === 0" :index="'/' + route.path">
             <el-icon v-if="route.meta?.icon"><component :is="route.meta!.icon" /></el-icon>
             <template #title>{{ route.meta?.title }}</template>
           </el-menu-item>
@@ -28,7 +28,7 @@
             <el-menu-item
               v-for="child in route.children.filter(c => !c.meta?.hidden)"
               :key="child.path"
-              :index="route.path + '/' + child.path"
+              :index="'/' + route.path + '/' + child.path"
             >
               <el-icon v-if="child.meta?.icon"><component :is="child.meta.icon" /></el-icon>
               <template #title>{{ child.meta?.title }}</template>
@@ -44,7 +44,7 @@
       <el-header class="admin-header">
         <div class="header-left">
           <span class="collapse-btn" @click="toggleCollapse">☰</span>
-          <span class="breadcrumb">AMS / <em>首页概览</em></span>
+          <span class="breadcrumb">AMS / <em>{{ route.meta?.title || '首页概览' }}</em></span>
         </div>
         <div class="header-right">
           <span class="user-avatar">A</span>

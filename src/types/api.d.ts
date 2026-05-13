@@ -18,3 +18,66 @@ interface LoginParams {
   username: string
   password: string
 }
+
+/** 角色信息 */
+interface RoleInfo {
+  roleId: number
+  roleName: string
+  roleKey: string
+  createTime?: string
+}
+
+/** 用户列表项（含角色） */
+interface UserVO {
+  userId: number
+  userName: string
+  nickName: string
+  status: string
+  createTime: string
+  roles: RoleInfo[]
+}
+
+/** 新增用户参数 */
+interface UserCreateParams {
+  userName: string
+  password: string
+  nickName?: string
+  status?: string
+  roleIds?: number[]
+}
+
+/** 编辑用户参数 */
+interface UserUpdateParams {
+  userName?: string
+  nickName?: string
+  status?: string
+  roleIds?: number[]
+}
+
+/** 角色参数 */
+interface RoleParams {
+  roleName: string
+  roleKey: string
+}
+
+/** 菜单项 */
+interface MenuInfo {
+  menuId: number
+  menuName: string
+  parentId: number
+  menuType: string
+  path?: string
+  component?: string
+  perms?: string
+  children?: MenuInfo[]
+}
+
+/** 菜单参数 */
+interface MenuParams {
+  menuName: string
+  parentId?: number
+  menuType: string
+  path?: string
+  component?: string
+  perms?: string
+}

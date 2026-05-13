@@ -2,7 +2,6 @@
   <div class="home-page">
     <div class="welcome-card">
       <h3>欢迎使用 AMS 资产管理系统</h3>
-      <p>登录成功，鉴权已打通。深靛蓝 + 暖金配色，沉稳商务风格。</p>
       <div class="stats-row">
         <div class="stat-card">
           <div class="stat-label">资产总数</div>

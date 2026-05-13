@@ -83,7 +83,6 @@
               v-for="role in allRoles"
               :key="role.roleId"
               :label="role.roleId"
-              :value="role.roleId"
             >
               {{ role.roleName }}
             </el-checkbox>

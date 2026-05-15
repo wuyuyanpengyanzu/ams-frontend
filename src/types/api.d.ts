@@ -81,3 +81,68 @@ interface MenuParams {
   component?: string
   perms?: string
 }
+
+/* ========== 资产管理 ========== */
+
+/** 资产列表项（含联表字段） */
+interface AssetItem {
+  assetId: number
+  assetCode: string
+  assetName: string
+  categoryId: number | null
+  categoryName: string
+  model: string
+  sn: string
+  unitPrice: number
+  purchaseDate: string
+  department: string
+  location: string
+  status: number
+  userId: number | null
+  userName: string
+  remark: string
+  createTime: string
+  updateTime: string
+}
+
+/** 操作日志 */
+interface AssetLog {
+  logId: number
+  assetId: number
+  operationType: number
+  operatorId: number
+  operatorName: string
+  remark: string
+  createTime: string
+}
+
+/** 分类项 */
+interface AssetCategory {
+  categoryId: number
+  categoryName: string
+  parentId: number
+  createTime: string
+}
+
+/** 资产查询参数 */
+interface AssetQueryParams {
+  current: number
+  size: number
+  keyword?: string
+  categoryId?: number
+  status?: number
+}
+
+/** 新增/编辑资产表单 */
+interface AssetFormParams {
+  assetCode: string
+  assetName: string
+  categoryId?: number
+  model?: string
+  sn?: string
+  unitPrice?: number
+  purchaseDate?: string
+  department?: string
+  location?: string
+  remark?: string
+}

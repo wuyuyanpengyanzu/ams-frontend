@@ -15,25 +15,30 @@
         active-text-color="#c9a44b"
         class="sidebar-menu"
       >
-        <template v-for="route in menuRoutes" :key="route.path">
-          <el-menu-item v-if="!route.children || route.children.length === 0" :index="'/' + route.path">
-            <el-icon v-if="route.meta?.icon"><component :is="route.meta!.icon" /></el-icon>
-            <template #title>{{ route.meta?.title }}</template>
+        <template v-for="menu in menuRoutes" :key="menu.menuId">
+          <template v-if="menu.menuType === 'M' && menu.children && menu.children.length">
+            <el-sub-menu :index="String(menu.menuId)">
+              <template #title>
+                <el-icon v-if="menu.icon"><component :is="menu.icon" /></el-icon>
+                <span>{{ menu.menuName }}</span>
+              </template>
+              <el-menu-item
+                v-for="child in menu.children.filter(c => c.menuType === 'C')"
+                :key="child.menuId"
+                :index="child.path"
+              >
+                <el-icon v-if="child.icon"><component :is="child.icon" /></el-icon>
+                <template #title>{{ child.menuName }}</template>
+              </el-menu-item>
+            </el-sub-menu>
+          </template>
+          <el-menu-item
+            v-else-if="menu.menuType === 'C'"
+            :index="menu.path"
+          >
+            <el-icon v-if="menu.icon"><component :is="menu.icon" /></el-icon>
+            <template #title>{{ menu.menuName }}</template>
           </el-menu-item>
-          <el-sub-menu v-else :index="route.path">
-            <template #title>
-              <el-icon v-if="route.meta?.icon"><component :is="route.meta!.icon" /></el-icon>
-              <span>{{ route.meta?.title }}</span>
-            </template>
-            <el-menu-item
-              v-for="child in route.children.filter(c => !c.meta?.hidden)"
-              :key="child.path"
-              :index="'/' + route.path + '/' + child.path"
-            >
-              <el-icon v-if="child.meta?.icon"><component :is="child.meta.icon" /></el-icon>
-              <template #title>{{ child.meta?.title }}</template>
-            </el-menu-item>
-          </el-sub-menu>
         </template>
       </el-menu>
     </el-aside>
@@ -71,22 +76,27 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ArrowDown } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
+import { useMenuStore } from '@/stores/menu'
+import { addDynamicRoutes } from '@/router'
 
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
+const menuStore = useMenuStore()
 const isCollapse = ref(false)
 
 const activeMenu = computed(() => route.path)
 
-const menuRoutes = computed(() => {
-  return router.options.routes
-    .find((r) => r.path === '/' && r.component)
-    ?.children?.filter((c) => !c.meta?.hidden) || []
+const menuRoutes = computed(() => menuStore.tree)
+
+onMounted(() => {
+  if (!menuStore.loaded) {
+    menuStore.fetchMenu().then(menus => addDynamicRoutes(menus))
+  }
 })
 
 function toggleCollapse() {

@@ -66,6 +66,7 @@ interface MenuInfo {
   menuName: string
   parentId: number
   menuType: string
+  icon?: string
   path?: string
   component?: string
   perms?: string
@@ -77,6 +78,7 @@ interface MenuParams {
   menuName: string
   parentId?: number
   menuType: string
+  icon?: string
   path?: string
   component?: string
   perms?: string

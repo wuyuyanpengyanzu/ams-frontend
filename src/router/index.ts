@@ -10,6 +10,36 @@ declare module 'vue-router' {
   }
 }
 
+// ====== 组件映射表：glob import 所有 views 下的 .vue 文件 ======
+const modules = import.meta.glob('/src/views/**/*.vue')
+
+/** 将 DB 菜单树转为 Vue Router 路由，动态 addRoute 到根布局下 */
+export function addDynamicRoutes(menus: MenuInfo[]) {
+  const layout = router.getRoutes().find(r => r.name === 'Layout')
+  const layoutName = layout?.name?.toString() || ''
+  const moduleRoutes = buildRoutes(menus)
+  moduleRoutes.forEach(r => router.addRoute(layoutName, r))
+}
+
+function buildRoutes(menus: MenuInfo[]): RouteRecordRaw[] {
+  return menus
+    .filter(m => m.menuType !== 'F')
+    .map(m => {
+      const route: RouteRecordRaw = {
+        path: m.path!.replace(/^\//, ''),
+        name: m.menuName,
+        meta: { title: m.menuName, icon: m.icon || undefined },
+        children: m.children ? buildRoutes(m.children) : undefined,
+      }
+      // 菜单类型 (C) 有 component，目录类型 (M) 仅作为容器
+      if (m.menuType === 'C' && m.component) {
+        route.component = modules[`/src/views/${m.component}.vue`]
+      }
+      return route
+    })
+}
+
+// ====== 静态路由（仅 login 和 layout shell + home） ======
 const routes: RouteRecordRaw[] = [
   {
     path: '/login',
@@ -19,6 +49,7 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: '/',
+    name: 'Layout',
     component: () => import('@/layout/AdminLayout.vue'),
     meta: { requiresAuth: true },
     redirect: '/home',
@@ -28,36 +59,6 @@ const routes: RouteRecordRaw[] = [
         name: 'Home',
         component: () => import('@/views/home/index.vue'),
         meta: { title: '首页', icon: 'HomeFilled' },
-      },
-      {
-        path: 'system/user',
-        name: 'UserManage',
-        component: () => import('@/views/system/user/index.vue'),
-        meta: { title: '用户管理', icon: 'User' },
-      },
-      {
-        path: 'system/role',
-        name: 'RoleManage',
-        component: () => import('@/views/system/role/index.vue'),
-        meta: { title: '角色管理', icon: 'Avatar' },
-      },
-      {
-        path: 'system/menu',
-        name: 'MenuManage',
-        component: () => import('@/views/system/menu/index.vue'),
-        meta: { title: '菜单管理', icon: 'Menu' },
-      },
-      {
-        path: 'system/asset',
-        name: 'AssetManage',
-        component: () => import('@/views/system/asset/index.vue'),
-        meta: { title: '资产管理', icon: 'Goods' },
-      },
-      {
-        path: 'system/asset/category',
-        name: 'AssetCategory',
-        component: () => import('@/views/system/asset/category/index.vue'),
-        meta: { title: '资产分类', icon: 'CollectionTag' },
       },
     ],
   },

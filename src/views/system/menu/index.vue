@@ -26,6 +26,7 @@
         </template>
       </el-table-column>
       <el-table-column prop="perms" label="权限标识" />
+      <el-table-column prop="icon" label="图标" width="120" />
       <el-table-column prop="path" label="路由地址" width="160" />
       <el-table-column label="操作" width="160" align="center">
         <template #default="{ row }">
@@ -72,6 +73,9 @@
         <el-form-item label="权限标识" prop="perms">
           <el-input v-model="form.perms" placeholder="如 sys:user:list" />
         </el-form-item>
+        <el-form-item label="图标" prop="icon">
+          <el-input v-model="form.icon" placeholder="如 HomeFilled" />
+        </el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="dialogVisible = false">取消</el-button>
@@ -97,6 +101,7 @@ const form = ref<MenuParams>({
   menuName: '',
   parentId: undefined,
   menuType: 'C',
+  icon: '',
   path: '',
   component: '',
   perms: '',
@@ -133,13 +138,14 @@ function openDialog(row?: MenuInfo) {
       menuName: row.menuName,
       parentId: row.parentId || 0,
       menuType: row.menuType,
+      icon: row.icon || '',
       path: row.path || '',
       component: row.component || '',
       perms: row.perms || '',
     }
   } else {
     editingId.value = null
-    form.value = { menuName: '', parentId: 0, menuType: 'C', path: '', component: '', perms: '' }
+    form.value = { menuName: '', parentId: 0, menuType: 'C', icon: '', path: '', component: '', perms: '' }
   }
   dialogVisible.value = true
 }

@@ -47,6 +47,18 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/system/menu/index.vue'),
         meta: { title: '菜单管理', icon: 'Menu' },
       },
+      {
+        path: 'system/asset',
+        name: 'AssetManage',
+        component: () => import('@/views/system/asset/index.vue'),
+        meta: { title: '资产管理', icon: 'Goods' },
+      },
+      {
+        path: 'system/asset/category',
+        name: 'AssetCategory',
+        component: () => import('@/views/system/asset/category/index.vue'),
+        meta: { title: '资产分类', icon: 'CollectionTag' },
+      },
     ],
   },
 ]

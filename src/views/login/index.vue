@@ -36,9 +36,12 @@ import { useRouter } from 'vue-router'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import { login } from '@/api/auth'
 import { useUserStore } from '@/stores/user'
+import { useMenuStore } from '@/stores/menu'
+import { addDynamicRoutes } from '@/router'
 
 const router = useRouter()
 const userStore = useUserStore()
+const menuStore = useMenuStore()
 const formRef = ref<FormInstance>()
 const loading = ref(false)
 
@@ -60,6 +63,8 @@ async function handleLogin() {
   try {
     const tokenInfo = await login(form)
     userStore.setToken(tokenInfo.tokenValue)
+    const menus = await menuStore.fetchMenu()
+    addDynamicRoutes(menus)
     ElMessage.success('登录成功')
     router.push('/')
   } catch {

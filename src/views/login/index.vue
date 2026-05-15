@@ -13,7 +13,7 @@
     <div class="login-form-area">
       <h2>欢迎回来</h2>
       <p class="login-hint">登录您的资产管理账户</p>
-      <el-form ref="formRef" :model="form" :rules="rules" label-width="0" size="large">
+      <el-form ref="formRef" :model="form" :rules="rules" label-width="0" size="large" @keyup.enter="handleLogin">
         <el-form-item prop="username">
           <el-input v-model="form.username" placeholder="请输入用户名" />
         </el-form-item>

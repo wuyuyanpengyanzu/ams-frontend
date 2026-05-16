@@ -7,12 +7,13 @@
           placeholder="搜索角色名或标识"
           clearable
           style="width: 220px"
+          @keyup.enter="fetchList"
         />
         <el-button @click="fetchList">查询</el-button>
         <el-button @click="searchKey = ''; fetchList()">重置</el-button>
       </div>
       <div class="toolbar-right">
-        <el-button type="primary" @click="openDialog()">+ 新增角色</el-button>
+        <el-button type="primary" v-permission="'ams:role:add'" @click="openDialog()">+ 新增角色</el-button>
       </div>
     </div>
 
@@ -20,10 +21,12 @@
       <el-table-column prop="roleId" label="ID" width="80" />
       <el-table-column prop="roleName" label="角色名称" />
       <el-table-column prop="roleKey" label="角色标识" />
-      <el-table-column label="操作" width="160" align="center">
+      <el-table-column label="操作" width="100">
         <template #default="{ row }">
-          <el-button type="primary" link @click="openDialog(row)">编辑</el-button>
-          <el-button type="danger" link @click="handleDelete(row)">删除</el-button>
+          <div class="op-cell">
+            <el-button type="primary" link v-permission="'ams:role:edit'" @click="openDialog(row)">编辑</el-button>
+            <el-button type="danger" link v-permission="'ams:role:delete'" @click="handleDelete(row)">删除</el-button>
+          </div>
         </template>
       </el-table-column>
     </el-table>
@@ -41,6 +44,17 @@
         <el-form-item label="角色标识" prop="roleKey">
           <el-input v-model="form.roleKey" placeholder="如 admin, user" />
         </el-form-item>
+        <el-form-item label="菜单权限">
+          <el-tree
+            ref="menuTreeRef"
+            :data="menuTreeData"
+            :props="{ label: 'menuName', children: 'children' }"
+            node-key="menuId"
+            show-checkbox
+            default-expand-all
+            :default-checked-keys="form.menuIds || []"
+          />
+        </el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="dialogVisible = false">取消</el-button>
@@ -53,17 +67,20 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
-import { getRoleList, createRole, updateRole, deleteRole } from '@/api/role'
+import { getRoleList, getRoleById, createRole, updateRole, deleteRole } from '@/api/role'
+import { getMenuTree } from '@/api/menu'
 
 const list = ref<RoleInfo[]>([])
 const searchKey = ref('')
 const dialogVisible = ref(false)
 const formRef = ref<FormInstance>()
 const editingId = ref<number | null>(null)
+const menuTreeRef = ref<any>(null)
+const menuTreeData = ref<MenuInfo[]>([])
 
 const isEdit = computed(() => editingId.value !== null)
 
-const form = ref<RoleParams>({ roleName: '', roleKey: '' })
+const form = ref<RoleParams>({ roleName: '', roleKey: '', menuIds: [] })
 
 const rules: FormRules = {
   roleName: [{ required: true, message: '请输入角色名称', trigger: 'blur' }],
@@ -85,17 +102,25 @@ function fetchList() {
 function openDialog(row?: RoleInfo) {
   if (row) {
     editingId.value = row.roleId
-    form.value = { roleName: row.roleName, roleKey: row.roleKey }
+    getRoleById(row.roleId).then((role: any) => {
+      form.value = { roleName: role.roleName, roleKey: role.roleKey, menuIds: role.menuIds || [] }
+    })
   } else {
     editingId.value = null
-    form.value = { roleName: '', roleKey: '' }
+    form.value = { roleName: '', roleKey: '', menuIds: [] }
   }
   dialogVisible.value = true
 }
 
+function loadMenuTree() {
+  getMenuTree().then((data) => (menuTreeData.value = data))
+}
+
 function handleSubmit() {
   formRef.value?.validate().then(() => {
-    const params = { ...form.value }
+    const checkedKeys = menuTreeRef.value?.getCheckedKeys() || []
+    const halfCheckedKeys = menuTreeRef.value?.getHalfCheckedKeys() || []
+    const params = { ...form.value, menuIds: [...checkedKeys, ...halfCheckedKeys] }
     const req = isEdit.value ? updateRole(editingId.value!, params) : createRole(params)
     req.then(() => {
       ElMessage.success(isEdit.value ? '编辑成功' : '新增成功')
@@ -116,7 +141,7 @@ function handleDelete(row: RoleInfo) {
   })
 }
 
-onMounted(fetchList)
+onMounted(() => { fetchList(); loadMenuTree() })
 </script>
 
 <style scoped>
@@ -142,5 +167,11 @@ onMounted(fetchList)
   display: flex;
   align-items: center;
   gap: 8px;
+}
+.op-cell {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2px;
 }
 </style>

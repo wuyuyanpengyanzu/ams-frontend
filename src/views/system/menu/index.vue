@@ -2,7 +2,7 @@
   <div class="page-card">
     <div class="toolbar">
       <span class="toolbar-hint">树形表格 — 展开/折叠查看父子层级</span>
-      <el-button type="primary" @click="openDialog()">+ 新增菜单</el-button>
+      <el-button type="primary" v-permission="'ams:menu:add'" @click="openDialog()">+ 新增菜单</el-button>
     </div>
 
     <el-table
@@ -28,10 +28,12 @@
       <el-table-column prop="perms" label="权限标识" />
       <el-table-column prop="icon" label="图标" width="120" />
       <el-table-column prop="path" label="路由地址" width="160" />
-      <el-table-column label="操作" width="160" align="center">
+      <el-table-column label="操作" width="100">
         <template #default="{ row }">
-          <el-button type="primary" link @click="openDialog(row)">编辑</el-button>
-          <el-button type="danger" link @click="handleDelete(row)">删除</el-button>
+          <div class="op-cell">
+            <el-button type="primary" link v-permission="'ams:menu:edit'" @click="openDialog(row)">编辑</el-button>
+            <el-button type="danger" link v-permission="'ams:menu:delete'" @click="handleDelete(row)">删除</el-button>
+          </div>
         </template>
       </el-table-column>
     </el-table>
@@ -64,13 +66,13 @@
         <el-form-item label="菜单名称" prop="menuName">
           <el-input v-model="form.menuName" placeholder="请输入菜单名称" />
         </el-form-item>
-        <el-form-item label="路由地址" prop="path">
+        <el-form-item label="路由地址" prop="path" v-show="form.menuType !== 'F'">
           <el-input v-model="form.path" placeholder="如 /system/user" />
         </el-form-item>
-        <el-form-item label="组件路径" prop="component">
+        <el-form-item label="组件路径" prop="component" v-show="form.menuType === 'C'">
           <el-input v-model="form.component" placeholder="如 system/user/index" />
         </el-form-item>
-        <el-form-item label="权限标识" prop="perms">
+        <el-form-item label="权限标识" prop="perms" :required="form.menuType === 'F'">
           <el-input v-model="form.perms" placeholder="如 sys:user:list" />
         </el-form-item>
         <el-form-item label="图标" prop="icon">
@@ -110,6 +112,16 @@ const form = ref<MenuParams>({
 const rules: FormRules = {
   menuName: [{ required: true, message: '请输入菜单名称', trigger: 'blur' }],
   menuType: [{ required: true, message: '请选择菜单类型', trigger: 'change' }],
+  perms: [{
+    validator: (_rule, value, callback) => {
+      if (form.value.menuType === 'F' && !value) {
+        callback(new Error('按钮类型必须填写权限标识'))
+      } else {
+        callback()
+      }
+    },
+    trigger: 'blur',
+  }],
 }
 
 /** 将树形数据拍扁为 el-tree-select 用的 options（排除按钮类型） */
@@ -193,5 +205,11 @@ onMounted(fetchTree)
 .toolbar-hint {
   font-size: 13px;
   color: #909399;
+}
+.op-cell {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2px;
 }
 </style>

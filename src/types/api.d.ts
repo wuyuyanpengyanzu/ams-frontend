@@ -25,6 +25,7 @@ interface RoleInfo {
   roleName: string
   roleKey: string
   createTime?: string
+  menuIds?: number[]
 }
 
 /** 用户列表项（含角色） */
@@ -58,6 +59,7 @@ interface UserUpdateParams {
 interface RoleParams {
   roleName: string
   roleKey: string
+  menuIds?: number[]
 }
 
 /** 菜单项 */

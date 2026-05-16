@@ -7,12 +7,13 @@
           placeholder="搜索分类名称"
           clearable
           style="width: 220px"
+          @keyup.enter="fetchList"
         />
         <el-button @click="fetchList">查询</el-button>
         <el-button @click="searchKey = ''; fetchList()">重置</el-button>
       </div>
       <div class="toolbar-right">
-        <el-button type="primary" @click="openDialog()">+ 新增分类</el-button>
+        <el-button type="primary" v-permission="'ams:category:add'" @click="openDialog()">+ 新增分类</el-button>
       </div>
     </div>
 
@@ -24,13 +25,15 @@
           <span v-if="row.parentId && row.parentId !== 0">
             {{ getParentName(row.parentId) }}
           </span>
-          <span v-else style="color: #c0c4cc">顶级分类</span>
+          <span v-else class="text-muted">顶级分类</span>
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="160" align="center">
+      <el-table-column label="操作" width="100">
         <template #default="{ row }">
-          <el-button type="primary" link @click="openDialog(row)">编辑</el-button>
-          <el-button type="danger" link @click="handleDelete(row)">删除</el-button>
+          <div class="op-cell">
+            <el-button type="primary" link v-permission="'ams:category:edit'" @click="openDialog(row)">编辑</el-button>
+            <el-button type="danger" link v-permission="'ams:category:delete'" @click="handleDelete(row)">删除</el-button>
+          </div>
         </template>
       </el-table-column>
     </el-table>
@@ -182,5 +185,12 @@ onMounted(fetchList)
   display: flex;
   align-items: center;
   gap: 8px;
+}
+.text-muted { color: #c0c4cc; }
+.op-cell {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2px;
 }
 </style>

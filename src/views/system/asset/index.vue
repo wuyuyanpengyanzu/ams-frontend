@@ -40,23 +40,23 @@
         <el-button @click="handleReset">重置</el-button>
       </div>
       <div class="toolbar-right">
-        <el-button type="primary" @click="openFormDialog()">+ 新增资产</el-button>
+        <el-button type="primary" v-permission="'ams:asset:add'" @click="openFormDialog()">+ 新增资产</el-button>
       </div>
     </div>
 
     <!-- ====== 数据表格 ====== -->
     <el-table :data="list" border stripe style="width: 100%" v-loading="loading">
-      <el-table-column prop="assetCode" label="资产编号" width="140" />
-      <el-table-column label="资产名称" width="140">
+      <el-table-column prop="assetCode" label="资产编号" min-width="140" />
+      <el-table-column label="资产名称" min-width="140">
         <template #default="{ row }">
           <el-button type="primary" link @click="openDrawer(row)">
             {{ row.assetName }}
           </el-button>
         </template>
       </el-table-column>
-      <el-table-column prop="categoryName" label="所属分类" width="100" />
-      <el-table-column prop="model" label="规格型号" width="120" />
-      <el-table-column prop="department" label="归属部门" width="100" />
+      <el-table-column prop="categoryName" label="所属分类" min-width="100" />
+      <el-table-column prop="model" label="规格型号" min-width="120" show-overflow-tooltip />
+      <el-table-column prop="department" label="归属部门" min-width="100" />
       <el-table-column label="状态" width="80" align="center">
         <template #default="{ row }">
           <el-tag :type="StatusEnum[row.status]?.type ?? 'info'" size="small">
@@ -64,48 +64,41 @@
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="领用人" width="100">
+      <el-table-column label="领用人" min-width="100">
         <template #default="{ row }">
           <span v-if="row.userName">{{ row.userName }}</span>
-          <span v-else style="color: #c0c4cc">-</span>
+          <span v-else class="text-muted">-</span>
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="200" align="center" fixed="right">
+      <el-table-column label="操作" width="120" fixed="right">
         <template #default="{ row }">
-          <el-button type="primary" link @click="openFormDialog(row)">编辑</el-button>
-          <el-button
-            v-if="row.status === 0"
-            type="success"
-            link
-            @click="openBorrowDialog(row)"
-          >
-            领用
-          </el-button>
-          <el-button
-            v-if="row.status === 1"
-            type="warning"
-            link
-            @click="openActionDialog(row, 'return')"
-          >
-            归还
-          </el-button>
-          <el-button
-            v-if="row.status !== 3"
-            type="warning"
-            link
-            @click="openActionDialog(row, 'repair')"
-          >
-            报修
-          </el-button>
-          <el-button
-            v-if="row.status !== 3"
-            type="danger"
-            link
-            @click="openActionDialog(row, 'scrap')"
-          >
-            报废
-          </el-button>
-          <el-button type="danger" link @click="handleDelete(row)">删除</el-button>
+          <div class="op-cell">
+            <el-button type="primary" link size="small" v-permission="'ams:asset:edit'" @click="openFormDialog(row)">编辑</el-button>
+            <el-dropdown trigger="click" @command="(cmd: string) => handleRowCommand(cmd, row)">
+            <el-button link size="small" class="more-btn">
+              更多<el-icon class="el-icon--right"><ArrowDown /></el-icon>
+            </el-button>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item v-if="row.status === 0" command="borrow" v-permission="'ams:asset:borrow'">
+                  <span class="drop-text drop-borrow">领用</span>
+                </el-dropdown-item>
+                <el-dropdown-item v-if="row.status === 1" command="return" v-permission="'ams:asset:return'">
+                  <span class="drop-text drop-return">归还</span>
+                </el-dropdown-item>
+                <el-dropdown-item v-if="row.status !== 3" command="repair" v-permission="'ams:asset:repair'">
+                  <span class="drop-text drop-repair">报修</span>
+                </el-dropdown-item>
+                <el-dropdown-item v-if="row.status !== 3" command="scrap" v-permission="'ams:asset:scrap'">
+                  <span class="drop-text drop-scrap">报废</span>
+                </el-dropdown-item>
+                <el-dropdown-item command="delete" divided v-permission="'ams:asset:delete'">
+                  <span class="drop-text drop-delete">删除</span>
+                </el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
+          </div>
         </template>
       </el-table-column>
     </el-table>
@@ -297,6 +290,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
+import { ArrowDown } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
 import {
   getAssetList,
@@ -506,6 +500,16 @@ const actionTitle = computed(() => {
   return { return: '归还', repair: '报修', scrap: '报废' }[actionType.value]
 })
 
+function handleRowCommand(cmd: string, row: AssetItem) {
+  switch (cmd) {
+    case 'borrow': openBorrowDialog(row); break
+    case 'return': openActionDialog(row, 'return'); break
+    case 'repair': openActionDialog(row, 'repair'); break
+    case 'scrap': openActionDialog(row, 'scrap'); break
+    case 'delete': handleDelete(row); break
+  }
+}
+
 function openActionDialog(row: AssetItem, type: 'return' | 'repair' | 'scrap') {
   actionTarget.value = row
   actionType.value = type
@@ -610,5 +614,29 @@ onMounted(() => {
   margin-top: 4px;
   color: #909399;
   font-size: 12px;
+}
+
+/* ======== 操作列下拉 ======== */
+.more-btn {
+  font-size: 12px;
+  color: #606266;
+}
+
+.drop-text {
+  font-size: 13px;
+}
+
+.drop-borrow  { color: #67c23a; }
+.drop-return { color: #e6a23c; }
+.drop-repair { color: #e6a23c; }
+.drop-scrap  { color: #f56c6c; }
+.drop-delete { color: #f56c6c; }
+
+.text-muted { color: #c0c4cc; }
+.op-cell {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2px;
 }
 </style>

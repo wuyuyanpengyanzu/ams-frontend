@@ -7,12 +7,13 @@
           placeholder="搜索用户名或昵称"
           clearable
           style="width: 220px"
+          @keyup.enter="fetchList"
         />
         <el-button @click="fetchList">查询</el-button>
         <el-button @click="searchKey = ''; fetchList()">重置</el-button>
       </div>
       <div class="toolbar-right">
-        <el-button type="primary" @click="openDialog()">+ 新增用户</el-button>
+        <el-button type="primary" v-permission="'ams:user:add'" @click="openDialog()">+ 新增用户</el-button>
       </div>
     </div>
 
@@ -32,7 +33,7 @@
               {{ role.roleName }}
             </el-tag>
           </template>
-          <span v-else style="color: #c0c4cc">无</span>
+          <span v-else class="text-muted">无</span>
         </template>
       </el-table-column>
       <el-table-column label="状态" width="90">
@@ -42,10 +43,12 @@
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="160" align="center">
+      <el-table-column label="操作" width="100">
         <template #default="{ row }">
-          <el-button type="primary" link @click="openDialog(row)">编辑</el-button>
-          <el-button type="danger" link @click="handleDelete(row)">删除</el-button>
+          <div class="op-cell">
+            <el-button type="primary" link v-permission="'ams:user:edit'" @click="openDialog(row)">编辑</el-button>
+            <el-button type="danger" link v-permission="'ams:user:delete'" @click="handleDelete(row)">删除</el-button>
+          </div>
         </template>
       </el-table-column>
     </el-table>
@@ -230,5 +233,12 @@ onMounted(fetchList)
   display: flex;
   align-items: center;
   gap: 8px;
+}
+.text-muted { color: #c0c4cc; }
+.op-cell {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2px;
 }
 </style>

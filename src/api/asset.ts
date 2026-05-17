@@ -1,4 +1,5 @@
 import request from '@/utils/request'
+import axios from 'axios'
 
 /** 分页查询资产列表 */
 export function getAssetList(params: AssetQueryParams): Promise<{
@@ -48,4 +49,47 @@ export function repairAsset(id: number, params: { remark?: string }): Promise<vo
 /** 报废资产 */
 export function scrapAsset(id: number, params: { remark?: string }): Promise<void> {
   return request.post(`/asset/${id}/scrap`, params)
+}
+
+/** 导出资产 Excel（返回 Blob，不走 request 拦截器） */
+export function exportAssetList(params: AssetQueryParams): Promise<Blob> {
+  const token = sessionStorage.getItem('satoken')
+  return axios.get(import.meta.env.VITE_APP_BASE_API + '/asset/export', {
+    params,
+    responseType: 'blob',
+    headers: token ? { satoken: token } : {},
+  }).then(res => res.data as Blob)
+}
+
+/** 上传 Excel 导入资产 */
+export function importAssets(file: File): Promise<ImportResult> {
+  const form = new FormData()
+  form.append('file', file)
+  return request.post('/asset/import', form, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
+}
+
+/** 下载导入模板 */
+export function downloadTemplate(): Promise<Blob> {
+  const token = sessionStorage.getItem('satoken')
+  return axios.get(import.meta.env.VITE_APP_BASE_API + '/asset/template', {
+    responseType: 'blob',
+    headers: token ? { satoken: token } : {},
+  }).then(res => res.data as Blob)
+}
+
+/** 查询即将到期的资产 */
+export function getWarrantyExpiring(params: WarrantyQueryParams): Promise<{
+  records: WarrantyItem[]
+  total: number
+  current: number
+  size: number
+}> {
+  return request.get('/asset/warranty/expiring', { params })
+}
+
+/** Dashboard 质保摘要 */
+export function getWarrantyDashboard(): Promise<{ expiringSoon: number; expired: number }> {
+  return request.get('/asset/warranty/dashboard')
 }

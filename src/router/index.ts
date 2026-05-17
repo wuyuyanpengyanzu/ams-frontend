@@ -18,22 +18,37 @@ export function addDynamicRoutes(menus: MenuInfo[]) {
   const layout = router.getRoutes().find(r => r.name === 'Layout')
   const layoutName = layout?.name?.toString() || ''
   const moduleRoutes = buildRoutes(menus)
+  console.log('[Router] All glob keys:', Object.keys(modules))
+  console.log('[Router] Adding routes to layout:', layoutName, moduleRoutes)
   moduleRoutes.forEach(r => router.addRoute(layoutName, r))
+  console.log('[Router] Routes after add:', router.getRoutes().map(r => ({ name: r.name, path: r.path })))
 }
 
-function buildRoutes(menus: MenuInfo[]): RouteRecordRaw[] {
+function buildRoutes(menus: MenuInfo[], parentPath = ''): RouteRecordRaw[] {
   return menus
     .filter(m => m.menuType !== 'F')
     .map(m => {
+      const fullPath = m.path || ''
+      // 子路由移除父路径前缀，得到相对路径
+      let relPath: string
+      if (parentPath && fullPath.startsWith(parentPath + '/')) {
+        relPath = fullPath.slice(parentPath.length + 1) // e.g. "user"
+      } else if (parentPath && fullPath === parentPath) {
+        relPath = '' // same path as parent, rare
+      } else {
+        relPath = fullPath.replace(/^\//, '') // root-level menu
+      }
       const route: RouteRecordRaw = {
-        path: m.path!.replace(/^\//, ''),
+        path: relPath,
         name: m.menuName,
         meta: { title: m.menuName, icon: m.icon || undefined },
-        children: m.children ? buildRoutes(m.children) : undefined,
+        children: m.children ? buildRoutes(m.children, fullPath) : undefined,
       }
       // 菜单类型 (C) 有 component，目录类型 (M) 仅作为容器
       if (m.menuType === 'C' && m.component) {
-        route.component = modules[`/src/views/${m.component}.vue`]
+        const key = `/src/views/${m.component}.vue`
+        route.component = modules[key]
+        console.log(`[Router] menu=${m.menuName}, key=${key}, found=${!!route.component}`)
       }
       return route
     })

@@ -149,4 +149,85 @@ interface AssetFormParams {
   department?: string
   location?: string
   remark?: string
+  warrantyMonths?: number
+}
+
+/* ========== Excel 导入导出 ========== */
+
+interface ImportErrorItem {
+  row: number
+  reason: string
+}
+
+interface ImportResult {
+  total: number
+  success: number
+  fail: number
+  errors: ImportErrorItem[]
+}
+
+/* ========== 质保预警 ========== */
+
+interface WarrantyQueryParams {
+  current: number
+  size: number
+  days?: number
+  keyword?: string
+  categoryId?: number
+  department?: string
+}
+
+interface WarrantyItem {
+  assetId: number
+  assetCode: string
+  assetName: string
+  categoryId: number
+  categoryName: string
+  model: string
+  department: string
+  location: string
+  status: number
+  unitPrice: number
+  purchaseDate: string
+  warrantyMonths: number
+  warrantyExpiryDate: string
+  createTime: string
+}
+
+/* ========== 盘点管理 ========== */
+
+interface InventoryTaskParams {
+  taskName: string
+  department?: string
+  categoryId?: number
+}
+
+interface InventoryTaskItem {
+  taskId: number
+  taskName: string
+  department: string
+  categoryId: number
+  status: number
+  totalCount: number
+  normalCount: number
+  abnormalCount: number
+  uncheckedCount: number
+  createTime: string
+  finishTime: string
+}
+
+interface InventoryItem {
+  itemId: number
+  taskId: number
+  assetId: number
+  result: number
+  remark: string
+  checkTime: string
+  assetCode: string
+  assetName: string
+  categoryName: string
+  model: string
+  department: string
+  location: string
+  assetStatus: number
 }

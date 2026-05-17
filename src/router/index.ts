@@ -41,7 +41,11 @@ function buildRoutes(menus: MenuInfo[], parentPath = ''): RouteRecordRaw[] {
       const route: RouteRecordRaw = {
         path: relPath,
         name: m.menuName,
-        meta: { title: m.menuName, icon: m.icon || undefined },
+        meta: {
+          title: m.menuName,
+          icon: m.icon || undefined,
+          hidden: m.path?.includes(':id') || undefined,
+        },
         children: m.children ? buildRoutes(m.children, fullPath) : undefined,
       }
       // 菜单类型 (C) 有 component，目录类型 (M) 仅作为容器

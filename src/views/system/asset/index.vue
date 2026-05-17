@@ -41,6 +41,8 @@
       </div>
       <div class="toolbar-right">
         <el-button type="primary" v-permission="'ams:asset:add'" @click="openFormDialog()">+ 新增资产</el-button>
+        <el-button v-permission="'ams:asset:export'" @click="handleExport">导出</el-button>
+        <el-button v-permission="'ams:asset:import'" @click="importVisible = true">导入</el-button>
       </div>
     </div>
 
@@ -285,12 +287,56 @@
         <el-empty v-else description="暂无操作日志" />
       </template>
     </el-drawer>
+
+    <!-- ====== 导入弹窗 ====== -->
+    <el-dialog v-model="importVisible" title="导入资产" width="520px" :close-on-click-modal="false">
+      <div class="import-steps">
+        <el-button type="primary" link @click="handleDownloadTemplate">
+          <el-icon style="margin-right:4px"><Download /></el-icon>下载导入模板
+        </el-button>
+        <el-upload
+          ref="uploadRef"
+          :auto-upload="false"
+          :limit="1"
+          accept=".xlsx,.xls"
+          :on-change="handleFileChange"
+          drag
+          style="margin-top:16px"
+        >
+          <el-icon class="el-icon--upload"><UploadFilled /></el-icon>
+          <div class="el-upload__text">拖拽文件到此处或点击上传</div>
+          <template #tip>
+            <div class="el-upload__tip">仅支持 .xlsx / .xls 格式</div>
+          </template>
+        </el-upload>
+      </div>
+      <div v-if="importResult" class="import-result">
+        <el-divider />
+        <div class="result-summary">
+          <span>共 <b>{{ importResult.total }}</b> 条</span>
+          <span class="result-success">成功 <b>{{ importResult.success }}</b></span>
+          <span class="result-fail">失败 <b>{{ importResult.fail }}</b></span>
+        </div>
+        <div v-if="importResult.errors.length" class="result-errors">
+          <el-table :data="importResult.errors" size="small" max-height="200">
+            <el-table-column prop="row" label="行号" width="70" />
+            <el-table-column prop="reason" label="失败原因" show-overflow-tooltip />
+          </el-table>
+        </div>
+      </div>
+      <template #footer>
+        <el-button @click="importVisible = false">关闭</el-button>
+        <el-button type="primary" :disabled="!pendingFile" :loading="importing" @click="handleImport">
+          开始导入
+        </el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
-import { ArrowDown } from '@element-plus/icons-vue'
+import { ArrowDown, Download, UploadFilled } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
 import {
   getAssetList,
@@ -302,6 +348,9 @@ import {
   returnAsset,
   repairAsset,
   scrapAsset,
+  exportAssetList,
+  importAssets,
+  downloadTemplate,
 } from '@/api/asset'
 import { getCategoryList } from '@/api/category'
 import { getUserList } from '@/api/user'
@@ -356,6 +405,57 @@ function handleReset() {
   query.categoryId = undefined
   query.status = undefined
   fetchList()
+}
+
+// ====== 导出 ======
+function handleExport() {
+  exportAssetList({ ...query }).then((blob) => {
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    const today = new Date().toISOString().slice(0, 10).replace(/-/g, '')
+    a.download = `资产列表_${today}.xlsx`
+    a.click()
+    URL.revokeObjectURL(url)
+    ElMessage.success('导出成功')
+  })
+}
+
+// ====== 导入 ======
+const importVisible = ref(false)
+const uploadRef = ref()
+const pendingFile = ref<File | null>(null)
+const importing = ref(false)
+const importResult = ref<ImportResult | null>(null)
+
+function handleFileChange(file: any) {
+  pendingFile.value = file.raw
+  importResult.value = null
+}
+
+function handleDownloadTemplate() {
+  downloadTemplate().then((blob) => {
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = '资产导入模板.xlsx'
+    a.click()
+    URL.revokeObjectURL(url)
+  })
+}
+
+function handleImport() {
+  if (!pendingFile.value) return
+  importing.value = true
+  importAssets(pendingFile.value).then((data) => {
+    importResult.value = data
+    if (data.success > 0) {
+      ElMessage.success(`成功导入 ${data.success} 条`)
+      fetchList()
+    }
+  }).finally(() => {
+    importing.value = false
+  })
 }
 
 // ====== 新增 / 编辑 ======
@@ -638,5 +738,28 @@ onMounted(() => {
   justify-content: center;
   align-items: center;
   gap: 2px;
+}
+
+.import-steps {
+  text-align: left;
+}
+
+.import-result {
+  text-align: left;
+}
+
+.result-summary {
+  display: flex;
+  gap: 20px;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.result-success { color: #67c23a; }
+.result-fail { color: #f56c6c; }
+
+.result-errors {
+  max-height: 200px;
+  overflow-y: auto;
 }
 </style>

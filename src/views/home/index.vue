@@ -20,10 +20,35 @@
         </div>
       </div>
     </div>
+
+    <div class="welcome-card" style="margin-top: 20px">
+      <div class="card-header">
+        <h3>质保预警</h3>
+        <el-button type="primary" link @click="$router.push('/asset/warranty')">查看全部 →</el-button>
+      </div>
+      <div class="stats-row" style="grid-template-columns: repeat(2, 1fr)">
+        <div class="stat-card stat-warn">
+          <div class="stat-label">即将到期（30天内）</div>
+          <div class="stat-value">{{ warranty.expiringSoon }}</div>
+        </div>
+        <div class="stat-card stat-danger">
+          <div class="stat-label">已过期</div>
+          <div class="stat-value">{{ warranty.expired }}</div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { ref, onMounted } from 'vue'
+import { getWarrantyDashboard } from '@/api/asset'
+
+const warranty = ref({ expiringSoon: 0, expired: 0 })
+
+onMounted(() => {
+  getWarrantyDashboard().then((data) => { warranty.value = data })
+})
 </script>
 
 <style scoped lang="scss">
@@ -83,5 +108,24 @@
     color: $gold;
     margin-top: 4px;
   }
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+
+  h3 {
+    margin-bottom: 0;
+  }
+}
+
+.stat-warn {
+  border-left: 4px solid #e6a23c;
+}
+
+.stat-danger {
+  border-left: 4px solid #f56c6c;
 }
 </style>

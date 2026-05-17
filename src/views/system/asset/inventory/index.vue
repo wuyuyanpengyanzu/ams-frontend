@@ -38,7 +38,7 @@
       <el-table-column label="操作" width="140" fixed="right">
         <template #default="{ row }">
           <div class="op-cell">
-            <el-button type="primary" link size="small" @click="$router.push(`/inventory/task/${row.taskId}`)">
+            <el-button type="primary" link size="small" @click="$router.push(`/asset/inventory/task/${row.taskId}`)">
               {{ row.status === 0 ? '盘点' : '详情' }}
             </el-button>
             <el-button

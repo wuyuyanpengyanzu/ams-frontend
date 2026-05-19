@@ -105,6 +105,7 @@ interface AssetItem {
   userId: number | null
   userName: string
   remark: string
+  warrantyMonths?: number
   createTime: string
   updateTime: string
 }

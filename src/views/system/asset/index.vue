@@ -172,6 +172,15 @@
         <el-form-item label="存放地点">
           <el-input v-model="form.location" placeholder="请输入存放地点" />
         </el-form-item>
+        <el-form-item label="质保(月)">
+          <el-input-number
+            v-model="form.warrantyMonths"
+            :min="0"
+            :controls="false"
+            placeholder="质保月数"
+            style="width: 100%"
+          />
+        </el-form-item>
         <el-form-item label="备注">
           <el-input
             v-model="form.remark"
@@ -475,6 +484,7 @@ const form = reactive<AssetFormParams>({
   department: '',
   location: '',
   remark: '',
+  warrantyMonths: undefined as number | undefined,
 })
 
 const formRules: FormRules = {
@@ -495,6 +505,7 @@ function openFormDialog(row?: AssetItem) {
     form.department = row.department
     form.location = row.location
     form.remark = row.remark
+    form.warrantyMonths = row.warrantyMonths ?? undefined
   } else {
     editingId.value = null
     form.assetCode = ''
@@ -507,6 +518,7 @@ function openFormDialog(row?: AssetItem) {
     form.department = ''
     form.location = ''
     form.remark = ''
+    form.warrantyMonths = undefined
   }
   formVisible.value = true
   formRef.value?.clearValidate()
@@ -525,6 +537,7 @@ function handleFormSubmit() {
       department: form.department || undefined,
       location: form.location || undefined,
       remark: form.remark || undefined,
+      warrantyMonths: form.warrantyMonths,
     }
     const req = isEdit.value
       ? updateAsset(editingId.value!, params)
@@ -546,7 +559,7 @@ function handleDelete(row: AssetItem) {
       ElMessage.success('删除成功')
       fetchList()
     })
-  })
+  }).catch(() => {})
 }
 
 // ====== 领用 ======

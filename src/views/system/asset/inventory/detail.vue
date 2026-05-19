@@ -113,6 +113,8 @@ function markItem(row: InventoryItem, result: number) {
       row.remark = value || ''
       row.checkTime = new Date().toISOString()
       ElMessage.success('已标记')
+    }).catch(() => {
+      ElMessage.error('标记失败')
     })
   }).catch(() => {})
 }

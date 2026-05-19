@@ -16,6 +16,11 @@ export function getAssetDetail(id: number): Promise<AssetItem & { logs: AssetLog
   return request.get(`/asset/${id}`)
 }
 
+/** 获取现有部门列表 */
+export function getDepartments(): Promise<string[]> {
+  return request.get('/asset/departments')
+}
+
 /** 新增资产 */
 export function createAsset(params: AssetFormParams): Promise<void> {
   return request.post('/asset', params)

@@ -88,16 +88,38 @@ const router = createRouter({
   routes,
 })
 
-router.beforeEach((to, _from, next) => {
+router.beforeEach(async (to, _from, next) => {
   const token = sessionStorage.getItem('satoken')
 
   if (to.meta.requiresAuth !== false && !token) {
     next('/login')
-  } else if (to.path === '/login' && token) {
-    next('/')
-  } else {
-    next()
+    return
   }
+
+  if (to.path === '/login' && token) {
+    next('/')
+    return
+  }
+
+  // 刷新后动态路由丢失，需要重新加载
+  if (token) {
+    const { useMenuStore } = await import('@/stores/menu')
+    const menuStore = useMenuStore()
+    if (!menuStore.loaded) {
+      try {
+        const menus = await menuStore.fetchMenu()
+        addDynamicRoutes(menus)
+        // 路由已添加，重新导航到目标路径
+        next({ ...to, replace: true })
+        return
+      } catch {
+        next('/login')
+        return
+      }
+    }
+  }
+
+  next()
 })
 
 export default router

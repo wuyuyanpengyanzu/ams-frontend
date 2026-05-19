@@ -19,7 +19,7 @@
       </el-table-column>
       <el-table-column label="盘点分类" min-width="120">
         <template #default="{ row }">
-          <span v-if="row.categoryId">{{ row.categoryId }}</span>
+          <span v-if="row.categoryId">{{ categories.find(c => c.categoryId === row.categoryId)?.categoryName ?? row.categoryId }}</span>
           <span v-else class="text-muted">全分类</span>
         </template>
       </el-table-column>
@@ -74,7 +74,9 @@
           <el-input v-model="form.taskName" placeholder="请输入任务名称" />
         </el-form-item>
         <el-form-item label="部门">
-          <el-input v-model="form.department" placeholder="留空盘点全部" />
+          <el-select v-model="form.department" placeholder="留空盘点全部" clearable filterable style="width: 100%">
+            <el-option v-for="d in departments" :key="d" :label="d" :value="d" />
+          </el-select>
         </el-form-item>
         <el-form-item label="分类">
           <el-select v-model="form.categoryId" placeholder="留空盘点全部" clearable style="width: 100%">
@@ -95,11 +97,13 @@ import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
 import { getInventoryTaskList, createInventoryTask, deleteInventoryTask } from '@/api/inventory'
 import { getCategoryList } from '@/api/category'
+import { getDepartments } from '@/api/asset'
 
 const list = ref<InventoryTaskItem[]>([])
 const loading = ref(false)
 const total = ref(0)
 const categories = ref<AssetCategory[]>([])
+const departments = ref<string[]>([])
 
 const query = reactive({ current: 1, size: 10 })
 
@@ -146,11 +150,12 @@ function handleDelete(row: InventoryTaskItem) {
       ElMessage.success('删除成功')
       fetchList()
     })
-  })
+  }).catch(() => {})
 }
 
 onMounted(() => {
   getCategoryList().then((data) => (categories.value = data))
+  getDepartments().then((data) => (departments.value = data))
   fetchList()
 })
 </script>

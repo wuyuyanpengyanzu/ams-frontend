@@ -76,12 +76,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ArrowDown } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
 import { useMenuStore } from '@/stores/menu'
-import { addDynamicRoutes } from '@/router'
 
 const route = useRoute()
 const router = useRouter()
@@ -93,11 +92,7 @@ const activeMenu = computed(() => route.path)
 
 const menuRoutes = computed(() => menuStore.tree)
 
-onMounted(() => {
-  if (!menuStore.loaded) {
-    menuStore.fetchMenu().then(menus => addDynamicRoutes(menus))
-  }
-})
+// 动态路由由 router.beforeEach 守卫保证加载，此处无需重复
 
 function toggleCollapse() {
   isCollapse.value = !isCollapse.value
